@@ -60,6 +60,7 @@ pub enum Action<M: ManagedTypeApi> {
     },
     AddModule(ManagedAddress<M>),
     RemoveModule(ManagedAddress<M>),
+    SendSyncCall(CallActionData<M>),
 }
 
 impl<M: ManagedTypeApi> Action<M> {

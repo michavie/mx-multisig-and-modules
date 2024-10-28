@@ -134,7 +134,7 @@ pub trait ProposeEndpointsModule:
         OptionalValue::Some(action_id)
     }
 
-    /// Propose a transaction in which the contract will perform an async call call.
+    /// Propose a transaction in which the contract will perform an async call.
     /// Can call smart contract endpoints directly.
     /// Can use ESDTTransfer/ESDTNFTTransfer/MultiESDTTransfer to send tokens, while also optionally calling endpoints.
     /// Works well with builtin functions.
@@ -238,6 +238,37 @@ pub trait ProposeEndpointsModule:
         let _ = self.module_id().get_id_non_zero(&sc_address);
 
         self.propose_action(&Action::RemoveModule(sc_address), opt_signature)
+    }
+
+    /// Propose a transaction in which the contract will perform a sync call.
+    /// Can call smart contract endpoints directly.
+    /// Can use ESDTTransfer/ESDTNFTTransfer/MultiESDTTransfer to send tokens, while also optionally calling endpoints.
+    /// Works well with builtin functions.
+    /// Cannot simply send EGLD directly without calling anything.
+    #[allow_multiple_var_args]
+    #[endpoint(proposeSyncCall)]
+    fn propose_sync_call(
+        &self,
+        to: ManagedAddress,
+        egld_amount: BigUint,
+        opt_gas_limit: Option<GasLimit>,
+        function_call: FunctionCall,
+        opt_signature: OptionalValue<SignatureArg<Self::Api>>,
+    ) -> ActionId {
+        require!(
+            egld_amount > 0 || !function_call.is_empty(),
+            "proposed action has no effect"
+        );
+
+        let call_data = CallActionData {
+            to,
+            egld_amount,
+            opt_gas_limit,
+            endpoint_name: function_call.function_name,
+            arguments: function_call.arg_buffer.into_vec_of_buffers(),
+        };
+
+        self.propose_action(&Action::SendSyncCall(call_data), opt_signature)
     }
 
     #[endpoint(proposeBatch)]

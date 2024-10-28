@@ -209,6 +209,40 @@ where
         action_id
     }
 
+    pub fn propose_sync_call(
+        &mut self,
+        to: &Address,
+        egld_amount: u64,
+        function_name: &[u8],
+        args: Vec<&[u8]>,
+    ) -> ActionId {
+        let mut action_id = 0;
+
+        self.b_mock
+            .execute_tx(
+                &self.first_board_member,
+                &self.ms_wrapper,
+                &rust_biguint!(0),
+                |sc| {
+                    let mut function_call = FunctionCall::new(function_name);
+                    for arg in args {
+                        function_call = function_call.argument(&arg);
+                    }
+
+                    action_id = sc.propose_sync_call(
+                        managed_address!(to),
+                        managed_biguint!(egld_amount),
+                        None,
+                        function_call,
+                        OptionalValue::None,
+                    );
+                },
+            )
+            .assert_ok();
+
+        action_id
+    }
+
     pub fn propose_remove_user(&mut self, user: &Address) -> ActionId {
         let mut action_id = 0;
 

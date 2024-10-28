@@ -98,4 +98,15 @@ pub trait EventsModule {
         #[indexed] gas: GasLimit,
         #[indexed] arguments: &MultiValueManagedVec<ManagedBuffer>,
     );
+
+    #[event("performSyncCall")]
+    fn perform_sync_call_event(
+        &self,
+        #[indexed] action_id: ActionId,
+        #[indexed] to: &ManagedAddress,
+        #[indexed] egld_value: &BigUint,
+        #[indexed] gas: GasLimit,
+        #[indexed] endpoint: &ManagedBuffer,
+        #[indexed] arguments: &MultiValueManagedVec<ManagedBuffer>,
+    );
 }

@@ -6,9 +6,9 @@
 
 // Init:                                 1
 // Upgrade:                              1
-// Endpoints:                           36
+// Endpoints:                           37
 // Async Callback:                       1
-// Total number of exported functions:  39
+// Total number of exported functions:  40
 
 #![no_std]
 
@@ -39,6 +39,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         proposeSCUpgradeFromSource => propose_sc_upgrade_from_source
         proposeAddModule => propose_add_module
         proposeRemoveModule => propose_remove_module
+        proposeSyncCall => propose_sync_call
         proposeBatch => propose_batch
         performAction => perform_action_endpoint
         performBatch => perform_batch
