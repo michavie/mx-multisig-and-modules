@@ -65,6 +65,9 @@ pub trait ExecuteActionModule:
             Action::SCUpgradeFromSource { sc_address, args } => {
                 self.upgrade_from_source(action_id, sc_address, args);
             }
+            Action::SendSyncCall(call_data) => {
+                self.send_sync_call(action_id, call_data);
+            }
             _ => {} // Deploy case handled in "try_execute_deploy" function
         }
     }
@@ -217,6 +220,27 @@ pub trait ExecuteActionModule:
             .async_call()
             .with_callback(self.callbacks().perform_async_call_callback())
             .call_and_exit();
+    }
+
+    fn send_sync_call(&self, action_id: ActionId, call_data: CallActionData<Self::Api>) {
+        let gas = call_data
+            .opt_gas_limit
+            .unwrap_or_else(|| self.ensure_and_get_gas_for_transfer_exec());
+        self.perform_sync_call_event(
+            action_id,
+            &call_data.to,
+            &call_data.egld_amount,
+            gas,
+            &call_data.endpoint_name,
+            call_data.arguments.as_multi(),
+        );
+        let (_, _transfers): (IgnoreValue, _) = self
+            .send()
+            .contract_call::<()>(call_data.to, call_data.endpoint_name)
+            .with_egld_transfer(call_data.egld_amount)
+            .with_raw_arguments(call_data.arguments.into())
+            .with_gas_limit(gas)
+            .execute_on_dest_context_with_back_transfers();
     }
 
     fn deploy_from_source(
